@@ -1,5 +1,77 @@
 #include "auth_module.h"
 
+//-------------------------------------------------------------------------------------------------------------
+// Globals
+//-------------------------------------------------------------------------------------------------------------
+const int MAX_ATTEMPTS = 3;
+
+//-------------------------------------------------------------------------------------------------------------
+// @name                : DoLogin
+//
+// @description         : Login prompt.
+//
+// @returns             : true on success
+//-------------------------------------------------------------------------------------------------------------
+bool DoLogin(AuthModule & auth)
+{
+    string user;
+    string pwd;
+    printf("\n** Login existing user\n");
+    printf("Username: ");
+    cin >> user;
+    printf("Password: ");
+    cin >> pwd;
+    bool retval = auth.Login(user, pwd);
+
+    return retval;
+}
+
+//-------------------------------------------------------------------------------------------------------------
+// @name                : DoRegistration
+//
+// @description         : Registration prompt
+//
+// @returns             : true on success
+//-------------------------------------------------------------------------------------------------------------
+bool DoRegistration(AuthModule & auth)
+{
+    string user;
+    string pwd1;
+    string pwd2;
+    printf("\n** New user registration\n");
+    printf("Select a username: ");
+    cin >> user;
+    userData_t *userData = auth.GetUserData(user);
+    if (userData != nullptr)
+    {
+        printf("User already exists!\n");
+        return false;
+    }
+
+    printf("Choose password  : ");
+    cin >> pwd1;
+    printf("Confirm password : ");
+    cin >> pwd2;
+    if (pwd1 == pwd2)
+    {
+        bool retval = auth.Register(user, pwd2);
+        if (retval)
+        {
+            printf("Registered successfully\n");
+            return true;
+        }
+    }
+    else
+    {
+        printf("Passwords do not match\n");
+    }
+
+    return false;
+}
+
+//-------------------------------------------------------------------------------------------------------------
+// M A I N 
+//-------------------------------------------------------------------------------------------------------------
 int main()
 {
 #if 0
@@ -10,89 +82,84 @@ int main()
     printf("Hash of [%20s]: %u\n", s2.c_str(), str_hash(s2));
 #endif
 
-    // Auth Module policy
+    // Creating an Authentication policy
     authPolicy_t authPolicy;
     authPolicy.passwordHistoryMax = 3;
     authPolicy.useStrongPasswords = true;
     authPolicy.passwordLenMax = 255;
     authPolicy.passwordLenMin = 6;
+    authPolicy.passwordExpiryDays = 30;
 
+    // Creating Authentication Module
     AuthModule auth(authPolicy);
-    bool retval = false;
+    auth.Initialize();
 
-#if 0
-    string user = "john";
-    string pwd = "safePassword1";
+    // Main menu
+    bool done = false;
+    string choice;
+    do
+    {
+        printf("\n");
+        printf("+--------------------------------------+\n");
+        printf("|              M E N U                 |\n");
+        printf("+--------------------------------------+\n");
+        printf("1> Login\n");
+        printf("2> Register\n");
+        printf("3> Show registered users\n");
+        printf("0> Quit\n");
+        printf(">> Choice: ");
+        cin >> choice;
+        if (choice == "1")
+        {
+            // Login
+            int attempts = 0;
+            bool loginDone = false;
+            do
+            {
+                loginDone = DoLogin(auth);
+                attempts++;
+                if (!loginDone && attempts == MAX_ATTEMPTS)
+                {
+                    printf("** Exceeded maximum attempts\n");
+                    break;
+                }
+            } while (!loginDone);
+        }
+        else if (choice == "2")
+        {
+            // New user registration
+            int attempts = 0;
+            bool registrationDone = false;
+            do
+            {
+                registrationDone = DoRegistration(auth);
+                attempts++;
+                if (!registrationDone && attempts == MAX_ATTEMPTS)
+                {
+                    printf("** Exceeded maximum attempts\n");
+                    break;
+                }
+            } while (!registrationDone);
+        }
+        else if (choice == "3")
+        {
+            // This is only for debug purpose
+            auth.ShowUsersDetails();
+        }
+        else if (choice == "0")
+        {
+            printf("** Terminating...\n");
+            break;
+        }
+        else
+        {
+            printf("** Invalid choice. Try again\n\n");
+        }
 
-    retval = auth.Login(user, pwd);
-    retval = auth.Register(user, pwd);
-    retval = auth.Login(user, pwd);
-
-    retval = auth.UpdateUserPassword(user, "safePassword2");
-    if (!retval)
-        printf("Password update failed for %s\n", user.c_str());
-
-    //retval = auth.UpdateUserPassword(user, "safePassword3");
-    //if (!retval)
-    //    printf("Password update failed for %s\n", user.c_str());
-
-    //retval = auth.UpdateUserPassword(user, "safePassword3");
-    //if (!retval)
-    //    printf("Password update failed for %s\n", user.c_str());
-
-    user = "rupert";
-    pwd = "safePassword1";
-
-    retval = auth.Login(user, pwd);
-    retval = auth.Register(user, pwd);
-    retval = auth.Login(user, pwd);
-
-    retval = auth.UpdateUserPassword(user, "safePassword2");
-    if (!retval)
-        printf("Password update failed for %s\n", user.c_str());
-
-    retval = auth.UpdateUserPassword(user, "safePassword3");
-    if (!retval)
-        printf("Password update failed for %s\n", user.c_str());
-
-    retval = auth.UpdateUserPassword(user, "safePassword3");
-    if (!retval)
-        printf("Password update failed for %s\n", user.c_str());
-
-    retval = auth.Login(user, pwd);
-    retval = auth.Register(user, pwd);
-    retval = auth.Login(user, pwd);
-
-    retval = auth.UpdateUserPassword(user, "safePassword2");
-    if (!retval)
-        printf("Password update failed for %s\n", user.c_str());
-
-    retval = auth.UpdateUserPassword(user, "safePassword3");
-    if (!retval)
-        printf("Password update failed for %s\n", user.c_str());
-
-    retval = auth.UpdateUserPassword(user, "safePassword3");
-    if (!retval)
-        printf("Password update failed for %s\n", user.c_str());
-
-    retval = auth.UpdateUserPassword(user, "safePassword4");
-    if (!retval)
-        printf("Password update failed for %s\n", user.c_str());
+    } while (!done);
 
 
-
-    auth.ShowUsersDetails();
-
-    retval = auth.UpdateUsersDataFile();
-    if (!retval)
-        printf("Auth data update failed!\n");
-    else
-        printf("Auth data file updated\n");
-#endif
-
-    retval = auth.LoadUsersDataFile();
-    auth.ShowUsersDetails();
-
+    getchar();
     getchar();
     return 0;
 }

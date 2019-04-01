@@ -30,10 +30,11 @@ typedef struct userData_tag
 
 typedef struct authPolicy_tag
 {
-    bool useStrongPasswords;
-    unsigned passwordHistoryMax;
-    unsigned passwordLenMin;
-    unsigned passwordLenMax;
+    bool useStrongPasswords;                  // If true, password will be checked for length and special character requirements
+    unsigned passwordHistoryMax;              // Maximum number of passwords which needs to be validated as per history requirement
+    unsigned passwordLenMin;                  // Minimum password length
+    unsigned passwordLenMax;                  // Maximum length of password
+    int passwordExpiryDays;                   // Days after which the current password will expire. 
 }authPolicy_t;
 
 //-------------------------------------------------------------------------------------------------------------
@@ -51,6 +52,7 @@ private:
 public:
     AuthModule(authPolicy_t authPolicy);
     ~AuthModule();
+    void Initialize();
     bool UpdateUsersDataFile();
     bool LoadUsersDataFile();
     userData_t* GetUserData(const string & userName);
@@ -61,6 +63,9 @@ public:
     void ShowUsersDetails();
     bool ValidatePassword(const string & userName, const string & password);
     bool IsPasswordValidAsPerHistory(const string & userName, const string & password);
+    size_t GetRegisteredUsers() { return m_usersDataMap.size(); }
+    double DaysFromTimestamp(long long ts);
+    bool HandlePasswordExpiry(userData_t *userData);
 };
 
 #endif
