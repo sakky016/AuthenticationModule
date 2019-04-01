@@ -19,7 +19,12 @@ AuthModule::AuthModule(authPolicy_t authPolicy)
 //-------------------------------------------------------------------------------------------------------------
 AuthModule::~AuthModule()
 {
-
+    // Free memory of users' data map
+    for (auto it = m_usersDataMap.begin(); it != m_usersDataMap.end(); it++)
+    {
+        printf("Freeing data for [%s]\n", it->first.c_str());
+        delete it->second;
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------
@@ -370,7 +375,6 @@ void AuthModule::ShowUsersDetails()
     if (1)
     {
         int index = 1;
-        printf("** Users registered: %u\n\n", m_usersDataMap.size());
         for (auto it = m_usersDataMap.begin(); it != m_usersDataMap.end(); it++)
         {
             userData_t *userData = it->second;
@@ -403,6 +407,7 @@ void AuthModule::ShowUsersDetails()
 
             index++;
         }
+        printf("\n** Users registered: %u\n", m_usersDataMap.size());
     }
 }
 

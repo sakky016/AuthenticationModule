@@ -74,6 +74,7 @@ bool UpdatePassword(AuthModule & auth)
 {
     bool passwordUpdated = false;
     string userName;
+    string currentPwd;
     string pwd1;
     string pwd2;
 
@@ -81,11 +82,18 @@ bool UpdatePassword(AuthModule & auth)
     printf("\n** Password Update\n");
     printf("Username         : ");
     cin >> userName;
-    printf("New password     : ");
-    cin >> pwd1;
-    printf("Confirm password : ");
-    cin >> pwd2;
-    return auth.UpdateUserPassword(userName, pwd2);
+    printf("Current password : ");
+    cin >> currentPwd;
+    if (auth.Login(userName, currentPwd))
+    {
+        printf("New password     : ");
+        cin >> pwd1;
+        printf("Confirm password : ");
+        cin >> pwd2;
+        return auth.UpdateUserPassword(userName, pwd2);
+    }
+
+    return false;
 }
 
 //-------------------------------------------------------------------------------------------------------------
@@ -100,6 +108,7 @@ int main()
     printf("Hash of [%20s]: %u\n", s1.c_str(), str_hash(s1));
     printf("Hash of [%20s]: %u\n", s2.c_str(), str_hash(s2));
 #endif
+{
 
     // Creating an Authentication policy
     authPolicy_t authPolicy;
@@ -176,7 +185,7 @@ int main()
                     break;
                 }
             } while (!pwdUpdated);
-            
+
         }
         else if (choice == "4")
         {
@@ -195,6 +204,7 @@ int main()
 
     } while (!done);
 
+}// End of scope for Auth Module
 
     getchar();
     getchar();
