@@ -69,6 +69,25 @@ bool DoRegistration(AuthModule & auth)
     return false;
 }
 
+
+bool UpdatePassword(AuthModule & auth)
+{
+    bool passwordUpdated = false;
+    string userName;
+    string pwd1;
+    string pwd2;
+
+
+    printf("\n** Password Update\n");
+    printf("Username         : ");
+    cin >> userName;
+    printf("New password     : ");
+    cin >> pwd1;
+    printf("Confirm password : ");
+    cin >> pwd2;
+    return auth.UpdateUserPassword(userName, pwd2);
+}
+
 //-------------------------------------------------------------------------------------------------------------
 // M A I N 
 //-------------------------------------------------------------------------------------------------------------
@@ -105,7 +124,8 @@ int main()
         printf("+--------------------------------------+\n");
         printf("1> Login\n");
         printf("2> Register\n");
-        printf("3> Show registered users\n");
+        printf("3> Password Update\n");
+        printf("4> Show registered users\n");
         printf("0> Quit\n");
         printf(">> Choice: ");
         cin >> choice;
@@ -142,6 +162,23 @@ int main()
             } while (!registrationDone);
         }
         else if (choice == "3")
+        {
+            // Password update
+            int attempts = 0;
+            bool pwdUpdated = false;
+            do
+            {
+                pwdUpdated = UpdatePassword(auth);
+                attempts++;
+                if (!pwdUpdated && attempts == MAX_ATTEMPTS)
+                {
+                    printf("** Exceeded maximum attempts\n");
+                    break;
+                }
+            } while (!pwdUpdated);
+            
+        }
+        else if (choice == "4")
         {
             // This is only for debug purpose
             auth.ShowUsersDetails();

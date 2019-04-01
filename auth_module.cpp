@@ -271,6 +271,7 @@ bool AuthModule::UpdateUserPassword(const string & userName, const string & pass
 
     if (userData == nullptr)
     {
+        printf("User [%s] not found!\n", userName.c_str());
         return retval;
     }
 
@@ -324,8 +325,7 @@ bool AuthModule::Login(const string & userName, const string & password)
         if (userData->password == password)
         {
             printf("User [%s] logged in\n", userName.c_str());
-            HandlePasswordExpiry(userData);
-            return true;
+            return HandlePasswordExpiry(userData);
         }
     }
 
@@ -492,7 +492,7 @@ bool AuthModule::HandlePasswordExpiry(userData_t *userData)
         double days = DaysFromTimestamp(currentTs - userData->lastPasswordChangeTimestamp);
         if (days >= m_authPolicy.passwordExpiryDays)
         {
-            // Password expired. Update required.
+            printf("Password has expired. Please update!\n");
             bool passwordUpdated = false;
             string newPassword;
             string pwd1;
@@ -529,6 +529,6 @@ bool AuthModule::HandlePasswordExpiry(userData_t *userData)
 //-------------------------------------------------------------------------------------------------------------
 double AuthModule::DaysFromTimestamp(long long ts)
 {
-    double days = ts / (60);// * 24);   // TODO: Remove comment. Testing for minutes instead of days
+    double days = (double)ts / (60 * 60 * 24);
     return days;
 }
